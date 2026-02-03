@@ -1,11 +1,10 @@
-import { IsNotEmpty, IsNumber, IsPositive, IsString } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateServicoDto {
-  @IsString()
-  @IsNotEmpty()
+  @ApiProperty({ example: 'Consulta', description: 'Nome do serviço' })
   nome: string;
 
-  @IsNumber()
-  @IsPositive()
+  @ApiProperty({ example: 120.0, description: 'Preço do serviço' })
   preco: number;
 }
+

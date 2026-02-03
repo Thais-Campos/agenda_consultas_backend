@@ -19,9 +19,24 @@ export class ClientesService {
     return this.repo.save(cliente);
   }
 
-  findAll() {
-    return this.repo.find();
-  }
+ async findAll(page = 1, limit = 10) {
+  const [data, total] = await this.repo.findAndCount({
+    skip: (page - 1) * limit,
+    take: limit,
+    order: { nome: 'ASC' },
+  });
+
+  return {
+    data,
+    meta: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
+}
+
 
   async findOne(id: number) {
     const cliente = await this.repo.findOne({ where: { id } });

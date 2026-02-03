@@ -11,16 +11,31 @@ export class ServicosService {
   constructor(
     @InjectRepository(Servico)
     private servicoRepository: Repository<Servico>,
-  ) {}
+  ) { }
 
   async create(createServicoDto: CreateServicoDto): Promise<Servico> {
     const servico = this.servicoRepository.create(createServicoDto);
     return this.servicoRepository.save(servico);
   }
 
-  async findAll(): Promise<Servico[]> {
-    return this.servicoRepository.find();
+  async findAll(page = 1, limit = 10) {
+    const [data, total] = await this.servicoRepository.findAndCount({
+      skip: (page - 1) * limit,
+      take: limit,
+      order: { nome: 'ASC' },
+    });
+
+    return {
+      data,
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
+
 
   async findOne(id: number): Promise<Servico> {
     const servico = await this.servicoRepository.findOneBy({ id });

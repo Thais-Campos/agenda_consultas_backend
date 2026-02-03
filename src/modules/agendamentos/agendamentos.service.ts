@@ -23,12 +23,12 @@ export class AgendamentosService {
 
     @InjectRepository(Servico)
     private servicoRepository: Repository<Servico>,
-  ) {}
+  ) { }
 
   async create(dto: CreateAgendamentoDto): Promise<Agendamento> {
     const dataHora = new Date(dto.dataHora);
 
-    // ❌ não permitir data no passado
+    // não permitir data no passado
     if (dataHora <= new Date()) {
       throw new BadRequestException(
         'Não é permitido agendar para o passado',
@@ -69,12 +69,25 @@ export class AgendamentosService {
     return this.agendamentoRepository.save(agendamento);
   }
 
-  async findAll(): Promise<Agendamento[]> {
-    return this.agendamentoRepository.find({
+  async findAll(page = 1, limit = 10) {
+    const [data, total] = await this.agendamentoRepository.findAndCount({
       where: { ativo: true },
+      skip: (page - 1) * limit,
+      take: limit,
       order: { dataHora: 'ASC' },
     });
+
+    return {
+      data,
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
+
 
   async findOne(id: number): Promise<Agendamento> {
     const agendamento = await this.agendamentoRepository.findOneBy({ id });
