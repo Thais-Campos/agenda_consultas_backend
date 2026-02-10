@@ -19,7 +19,7 @@ import { PaginationDto } from '../../shared/dto/pagination.dto';
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Serviços')
-@ApiBearerAuth()
+@ApiBearerAuth('JWT-auth')
 @UseGuards(JwtAuthGuard)
 @Controller('servicos')
 export class ServicosController {
