@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -55,7 +56,7 @@ export class AgendamentosService {
     });
 
     if (conflito) {
-      throw new BadRequestException(
+      throw new  ConflictException(
         'Já existe um agendamento para este horário',
       );
     }

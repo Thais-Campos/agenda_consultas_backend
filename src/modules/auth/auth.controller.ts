@@ -1,5 +1,5 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiTags } from '@nestjs/swagger';
 
 import { AuthService } from './auth.service';
 import { CreateUserDto } from '../users/dto/create-user.dto';
@@ -19,7 +19,26 @@ export class AuthController {
   }
 
   @Post('login')
-  login(@Body() body: { email: string; senha: string }) {
-    return this.authService.login(body.email, body.senha);
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        email: {
+          type: 'string',
+          example: 'email@exemplo.com',
+        },
+        senha: {
+          type: 'string',
+          example: '123456',
+        },
+      },
+      required: ['email', 'senha'],
+    },
+  })
+  login(
+    @Body('email') email: string,
+    @Body('senha') senha: string,
+  ) {
+    return this.authService.login(email, senha);
   }
 }
