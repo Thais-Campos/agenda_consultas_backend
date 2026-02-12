@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { LessThan, Repository } from 'typeorm';
+import { LessThan, MoreThanOrEqual, Repository } from 'typeorm';
 
 import { Agendamento } from './entities/agendamento.entity';
 import { CreateAgendamentoDto } from './dto/create-agendamento.dto';
@@ -71,25 +71,29 @@ export class AgendamentosService {
   }
 
   async findAll(page = 1, limit = 10) {
-    const [data, total] = await this.agendamentoRepository.findAndCount({
-      where: { ativo: true },
-      skip: (page - 1) * limit,
-      take: limit,
-      order: { dataHora: 'ASC' },
-    });
+  const query = this.agendamentoRepository
+    .createQueryBuilder("agendamento")
+    .leftJoinAndSelect("agendamento.cliente", "cliente")
+    .leftJoinAndSelect("agendamento.servico", "servico")
+    .where("agendamento.ativo = :ativo", { ativo: true })
+    .andWhere("agendamento.dataHora >= :agora", { agora: new Date() })
+    .andWhere("cliente.ativo = :clienteAtivo", { clienteAtivo: true })
+    .orderBy("agendamento.dataHora", "ASC")
+    .skip((page - 1) * limit)
+    .take(limit);
 
-    return {
-      data,
-      meta: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
-      },
-    };
-  }
+  const [data, total] = await query.getManyAndCount();
 
-
+  return {
+    data,
+    meta: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
+}
   async findOne(id: number): Promise<Agendamento> {
     const agendamento = await this.agendamentoRepository.findOneBy({ id });
 

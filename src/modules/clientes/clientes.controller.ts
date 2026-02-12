@@ -56,5 +56,9 @@ export class ClientesController {
     return this.service.remove(Number(id));
   }
 
+@Delete(':id/force')
+forceRemove(@Param('id') id: string) {
+  return this.service.forceRemove(Number(id));
+}
 
 }

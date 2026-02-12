@@ -1,18 +1,20 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-
+import { MoreThanOrEqual, Repository } from 'typeorm';
 import { Cliente } from './entities/cliente.entity';
-
 import { UpdateClienteDto } from './dto/update-cliente.dto';
 import { CreateClienteDto } from './dto/create-cliente.dto';
-
+import { Agendamento } from '../agendamentos/entities/agendamento.entity';
 @Injectable()
 export class ClientesService {
   constructor(
     @InjectRepository(Cliente)
     private repo: Repository<Cliente>,
+
+    @InjectRepository(Agendamento)
+    private agendamentoRepo: Repository<Agendamento>,
   ) { }
+
 
   create(dto: CreateClienteDto) {
     const cliente = this.repo.create(dto);
@@ -21,7 +23,7 @@ export class ClientesService {
 
   async findAll(page = 1, limit = 10) {
     const [data, total] = await this.repo.findAndCount({
-      where: { ativo: true},
+      where: { ativo: true },
       skip: (page - 1) * limit,
       take: limit,
       order: { nome: 'ASC' },
@@ -59,11 +61,39 @@ export class ClientesService {
   async remove(id: number) {
     const cliente = await this.findOne(id);
 
-    cliente.ativo = false;
+    const temAgendamentoFuturo = await this.agendamentoRepo.count({
+      where: {
+        cliente: { id },
+        ativo: true,
+        dataHora: MoreThanOrEqual(new Date()),
+      },
+    });
 
+    if (temAgendamentoFuturo > 0) {
+      throw new BadRequestException(
+        'Este cliente possui agendamentos futuros. Deseja realmente desativar?'
+      );
+    }
+
+    cliente.ativo = false;
     await this.repo.save(cliente);
 
     return { message: 'Cliente desativado com sucesso' };
   }
+
+  async forceRemove(id: number) {
+  const cliente = await this.findOne(id);
+
+  await this.agendamentoRepo.update(
+    { cliente: { id }, ativo: true },
+    { ativo: false },
+  );
+
+  cliente.ativo = false;
+  await this.repo.save(cliente);
+
+  return { message: 'Cliente desativado e agendamentos cancelados' };
+}
+
 
 }
