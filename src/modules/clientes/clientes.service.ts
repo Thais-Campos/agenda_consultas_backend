@@ -12,30 +12,32 @@ export class ClientesService {
   constructor(
     @InjectRepository(Cliente)
     private repo: Repository<Cliente>,
-  ) {}
+  ) { }
 
   create(dto: CreateClienteDto) {
     const cliente = this.repo.create(dto);
     return this.repo.save(cliente);
   }
 
- async findAll(page = 1, limit = 10) {
-  const [data, total] = await this.repo.findAndCount({
-    skip: (page - 1) * limit,
-    take: limit,
-    order: { nome: 'ASC' },
-  });
+  async findAll(page = 1, limit = 10) {
+    const [data, total] = await this.repo.findAndCount({
+      where: { ativo: true},
+      skip: (page - 1) * limit,
+      take: limit,
+      order: { nome: 'ASC' },
+    });
 
-  return {
-    data,
-    meta: {
-      page,
-      limit,
-      total,
-      totalPages: Math.ceil(total / limit),
-    },
-  };
-}
+
+    return {
+      data,
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
 
 
   async findOne(id: number) {
@@ -56,7 +58,12 @@ export class ClientesService {
 
   async remove(id: number) {
     const cliente = await this.findOne(id);
-    await this.repo.remove(cliente);
-    return { message: 'Cliente removido com sucesso' };
+
+    cliente.ativo = false;
+
+    await this.repo.save(cliente);
+
+    return { message: 'Cliente desativado com sucesso' };
   }
+
 }

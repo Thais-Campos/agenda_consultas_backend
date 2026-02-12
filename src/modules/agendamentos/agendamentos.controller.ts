@@ -41,6 +41,17 @@ export class AgendamentosController {
     return this.agendamentosService.findAll(page, limit);
   }
 
+  @Get("historico")
+  historico(
+    @Query("page") page = 1,
+    @Query("limit") limit = 10,
+  ) {
+    return this.agendamentosService.historico(
+      Number(page),
+      Number(limit),
+    );
+  }
+
   @ApiResponse({ status: 200, description: 'Agendamento encontrado' })
   @ApiResponse({ status: 404, description: 'Agendamento não encontrado' })
   @Get(':id')
@@ -61,4 +72,5 @@ export class AgendamentosController {
   cancelar(@Param('id', ParseIntPipe) id: number) {
     return this.agendamentosService.cancelar(id);
   }
+
 }

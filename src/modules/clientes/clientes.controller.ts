@@ -19,9 +19,9 @@ import { JwtAuthGuard } from '../../shared/guards/jwt-auth.guard';
 import { PaginationDto } from '../../shared/dto/pagination.dto';
 
 @ApiTags('Clientes')
-@ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
 @Controller('clientes')
+@ApiBearerAuth('JWT-auth')
+@UseGuards(JwtAuthGuard)
 
 export class ClientesController {
   constructor(private readonly service: ClientesService) { }
@@ -55,4 +55,6 @@ export class ClientesController {
   remove(@Param('id') id: string) {
     return this.service.remove(Number(id));
   }
+
+
 }

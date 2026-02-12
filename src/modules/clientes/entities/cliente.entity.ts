@@ -18,4 +18,9 @@ export class Cliente {
   @ApiProperty({ required: false })
   @Column({ type: 'text', nullable: true })
   observacao?: string;
+
+  @ApiProperty()
+  @Column({ default: true })
+  ativo: boolean;
+
 }

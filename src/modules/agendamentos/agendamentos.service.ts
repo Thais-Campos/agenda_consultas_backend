@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { LessThan, Repository } from 'typeorm';
 
 import { Agendamento } from './entities/agendamento.entity';
 import { CreateAgendamentoDto } from './dto/create-agendamento.dto';
@@ -56,7 +56,7 @@ export class AgendamentosService {
     });
 
     if (conflito) {
-      throw new  ConflictException(
+      throw new ConflictException(
         'Já existe um agendamento para este horário',
       );
     }
@@ -124,4 +124,28 @@ export class AgendamentosService {
     agendamento.ativo = false;
     await this.agendamentoRepository.save(agendamento);
   }
+
+  async historico(page = 1, limit = 10) {
+    const [data, total] = await this.agendamentoRepository.findAndCount({
+      where: {
+        ativo: true,
+        dataHora: LessThan(new Date()),
+      },
+      relations: ["cliente", "servico"],
+      order: { dataHora: "DESC" },
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+
+    return {
+      data,
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
 }
