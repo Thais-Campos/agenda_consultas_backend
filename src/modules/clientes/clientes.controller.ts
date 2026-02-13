@@ -35,8 +35,8 @@ export class ClientesController {
   @ApiResponse({ status: 200, description: 'Lista paginada de clientes' })
   @Get()
   findAll(@Query() query: PaginationDto) {
-    const { page, limit } = query;
-    return this.service.findAll(page, limit);
+    const { page, limit, busca } = query;
+    return this.service.findAll(page, limit, busca);
   }
 
   @ApiResponse({ status: 200, description: 'Cliente encontrado' })
@@ -56,9 +56,9 @@ export class ClientesController {
     return this.service.remove(Number(id));
   }
 
-@Delete(':id/force')
-forceRemove(@Param('id') id: string) {
-  return this.service.forceRemove(Number(id));
-}
+  @Delete(':id/force')
+  forceRemove(@Param('id') id: string) {
+    return this.service.forceRemove(Number(id));
+  }
 
 }

@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { MoreThanOrEqual, Repository } from 'typeorm';
+import { ILike, MoreThanOrEqual, Repository } from 'typeorm';
 import { Cliente } from './entities/cliente.entity';
 import { UpdateClienteDto } from './dto/update-cliente.dto';
 import { CreateClienteDto } from './dto/create-cliente.dto';
@@ -21,26 +21,29 @@ export class ClientesService {
     return this.repo.save(cliente);
   }
 
-  async findAll(page = 1, limit = 10) {
-    const [data, total] = await this.repo.findAndCount({
-      where: { ativo: true },
-      skip: (page - 1) * limit,
-      take: limit,
-      order: { nome: 'ASC' },
-    });
+  async findAll(page = 1, limit = 10, busca?: string) {
 
+  const where = busca
+    ? { nome: ILike(`%${busca}%`), ativo: true }
+    : { ativo: true };
 
-    return {
-      data,
-      meta: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
-      },
-    };
-  }
+  const [data, total] = await this.repo.findAndCount({
+    where,
+    skip: (page - 1) * limit,
+    take: limit,
+    order: { nome: 'ASC' },
+  });
 
+  return {
+    data,
+    meta: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
+}
 
   async findOne(id: number) {
     const cliente = await this.repo.findOne({ where: { id } });
